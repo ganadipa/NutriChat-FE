@@ -1,39 +1,67 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { Slot, useRouter, useSegments } from "expo-router";
+import React, { useEffect, useState } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
+// Simple auth context example - replace with your actual implementation
+export const AuthContext = React.createContext({
+  isAuthenticated: false,
+  setIsAuthenticated: (value: boolean) => {},
+});
+
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [appIsReady, setAppIsReady] = useState(false);
+  const segments = useSegments();
+  const router = useRouter();
+
+  // Load fonts if needed
+  const [fontsLoaded] = useFonts({
+    "SpaceMono-Regular": require("../assets/fonts/SpaceMono-Regular.ttf"),
+    // Add other fonts as needed
   });
 
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    async function prepare() {
+      try {
+        // Simulate some resource loading or data fetching
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        setAppIsReady(true);
+        await SplashScreen.hideAsync();
+      }
     }
-  }, [loaded]);
 
-  if (!loaded) {
+    prepare();
+  }, []);
+
+  useEffect(() => {
+    if (!appIsReady) return;
+
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // Redirect to the onboarding page if not authenticated
+      router.replace("/(auth)/onboarding");
+    } else if (isAuthenticated && inAuthGroup) {
+      // Redirect to the main app if authenticated
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, segments, appIsReady]);
+
+  if (!appIsReady || !fontsLoaded) {
     return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
+      {/* Use Slot instead of Stack for root layout */}
+      <Slot />
+    </AuthContext.Provider>
   );
 }
