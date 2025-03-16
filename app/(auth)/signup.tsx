@@ -12,6 +12,7 @@ import { StatusBar } from "expo-status-bar";
 import { Link, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SignUp() {
   const [name, setName] = useState("");
@@ -20,12 +21,12 @@ export default function SignUp() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { signup } = useAuth();
   const router = useRouter();
 
   const handleSignUp = () => {
-    // Implement your sign up logic
-    // Then navigate to onboarding or main app
-    router.replace("/(tabs)");
+    signup(name, password, email);
+    router.replace("/(assessment)/welcome");
   };
 
   return (

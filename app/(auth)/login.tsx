@@ -11,17 +11,18 @@ import { StatusBar } from "expo-status-bar";
 import { Link, useRouter } from "expo-router";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { isAuthenticated, login } = useAuth();
   const router = useRouter();
 
   const handleLogin = () => {
-    // Implement your authentication logic here
-    // For now, let's just navigate to the main app
-    router.replace("/(tabs)");
+    login(username, password);
+    router.replace("/(assessment)/welcome");
   };
 
   return (

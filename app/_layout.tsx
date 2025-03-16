@@ -2,15 +2,10 @@ import { Slot, useRouter, useSegments } from "expo-router";
 import React, { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
+import { AuthContext } from "@/lib/contexts/auth-context";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
-
-// Simple auth context example - replace with your actual implementation
-export const AuthContext = React.createContext({
-  isAuthenticated: false,
-  setIsAuthenticated: (value: boolean) => {},
-});
 
 export default function RootLayout() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
