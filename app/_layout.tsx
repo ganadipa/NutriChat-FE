@@ -3,12 +3,13 @@ import React, { useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { AuthContext } from "@/lib/contexts/auth-context";
+import "./global.css";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [appIsReady, setAppIsReady] = useState(false);
   const segments = useSegments();
   const router = useRouter();
