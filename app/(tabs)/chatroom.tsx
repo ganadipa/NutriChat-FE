@@ -1,20 +1,62 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from "react-native";
 
-export default function ChatRoom() {
-  const [messages, setMessages] = useState([
-    { id: "1", text: "Hi chat, aku baru aja makan nasi goreng. Tolong masukkan ke list daftar makanan harian ku ya...", sender: "user" },
-    { id: "2", text: "Noted, Perkiraan kandungan karbohidrat, lemak, dan protein dalam satu piring nasi goreng (sekitar 300 gram):\n\n• Karbohidrat: ~80-90 gram\n• Lemak: ~15-25 gram\n• Protein: ~10-20 gram\n\nKamu bisa lebih spesifik jika ingin analisis yang lebih tepat!", sender: "bot" },
-    { id: "3", text: "Pas banget, kira-kira segitu", sender: "user" },
-    { id: "4", text: "Oke kalau begitu, aku izin memasukkannya ke list daftar makananmu, ya", sender: "bot" },
-  ]);
-  const [input, setInput] = useState("");
+const GEMINI_API_KEY = "AIzaSyA8oA5wbNn2LsSTaY45deY17nEGxM_cCVc";
 
-  const sendMessage = () => {
-    if (input.trim() === "") return;
-    const newMessage = { id: Date.now().toString(), text: input, sender: "user" };
-    setMessages([...messages, newMessage]);
+type Message = {
+  id: string;
+  text: string;
+  sender: "user" | "bot";
+};
+
+export default function ChatRoom() {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (input.trim() === "" || loading) return;
+
+    const userMessage: Message = { id: Date.now().toString(), text: input, sender: "user" };
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            system_instruction: {
+              parts: [
+                {
+                  text: `Nama kamu adalah JoniBot. Kamu adalah asisten kesehatan yang ingin berada di sebuah aplikasi 
+                  yang menjaga pola makan dan pola hidup bernama NutriChat. Kamu disini memberikan informasi 
+                  untuk pengguna agar mereka dapat memilih makanan yang tepat dan sehat.`,
+                },
+              ],
+            },
+            contents: [
+              {
+                parts: [{ text: input }],
+              },
+            ],
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const botReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Maaf, aku tidak mengerti.";
+
+      const botMessage: Message = { id: Date.now().toString() + "-bot", text: botReply, sender: "bot" };
+      setMessages((prevMessages) => [...prevMessages, botMessage]);
+    } catch (error) {
+      console.error("Error fetching from Gemini:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,8 +82,8 @@ export default function ChatRoom() {
           value={input}
           onChangeText={setInput}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendText}>➤</Text>
+        <TouchableOpacity style={styles.sendButton} onPress={sendMessage} disabled={loading}>
+          <Text style={styles.sendText}>{loading ? "..." : "➤"}</Text>
         </TouchableOpacity>
       </View>
     </View>
