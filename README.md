@@ -17,3 +17,6 @@ NutriChat adalah aplikasi pelacak kalori yang menggunakan teknologi **LLM** untu
 - **Komunitas Aktif**: Berinteraksi dengan pengguna lain yang memiliki tujuan serupa.  
 
 Dengan cara yang praktis dan personal, NutriChat membantu pengguna mencapai tujuan kesehatan mereka sambil tetap terhubung dengan komunitas.  
+
+#### Cara Run
+Masukkan "npm i" di terminal, saat sudah selesai masukkan npx expo start. Akan muncul QR Code, scan QR code dengan aplikasi Expo GO (android) atau dengan kamera (iOS).
